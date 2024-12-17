@@ -1,20 +1,15 @@
 import torch
-import pyttsx3
 import streamlit as st
 import numpy as np
 import cv2
 from PIL import Image
 import time
-
-# Initialize TTS engine
-engine = pyttsx3.init()
-engine.setProperty('rate', 150)  # Adjust the speed of speech
-
-# Load the pre-trained YOLOv5 model from PyTorch Hub
-model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+from gtts import gTTS
+import os
 
 # Function to perform object detection and TTS
 def detect_objects(frame):
+    # Convert frame to RGB for YOLOv5
     image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     
     # Perform inference
@@ -35,18 +30,28 @@ def detect_objects(frame):
         cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
 
-    # Announce detected objects
+    # Announce detected objects using gTTS
     if detected_objects:
         announcement = "Detected: " + ", ".join(detected_objects)
-        engine.say(announcement)
-        engine.runAndWait()
+        speak_text(announcement)  # Speak detected objects aloud
 
     return frame, detected_objects
+
+# Function for text-to-speech using gTTS
+def speak_text(text):
+    tts = gTTS(text=text, lang='en')
+    tts.save("output.mp3")
+    os.system("start output.mp3")  # On Windows
+    # On Linux or macOS, you might use 'mpg321 output.mp3' or similar
+    # os.system("mpg321 output.mp3")  # Linux or macOS alternative
+
+# Load the pre-trained YOLOv5 model from PyTorch Hub
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
 
 # Streamlit app layout
 st.set_page_config(page_title="YOLOv5 Real-Time Object Detection", page_icon=":guardsman:", layout="centered")
 st.title("YOLOv5 Real-Time Object Detection App")
-st.markdown("""
+st.markdown("""  
     **Welcome to the YOLOv5 Real-Time Object Detection App!**  
     This application uses the YOLOv5 deep learning model to detect objects from a real-time webcam feed.
     The detected objects will be highlighted with bounding boxes and labels, and an audio announcement will be made.
@@ -108,4 +113,3 @@ st.markdown("""
 Made with ❤️ using Streamlit and YOLOv5.  
 [GitHub Repo](https://github.com/ultralytics/yolov5)
 """)
-
