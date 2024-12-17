@@ -1,5 +1,4 @@
 streamlit==1.41.1
 torch==2.5.1
-opencv-python==4.7.0
 pyttsx3==2.98
 Pillow==11.0.0
